@@ -1,0 +1,517 @@
+function listar_Fabrincantes() {
+  $(document).ready(function () {
+    $.ajax({
+      beforeSend: function () {
+        $("#lista_Fabricantes").html("Recuperando proveedores...");
+      },
+      url: "Lista_Fabricantes.php",
+      type: "POST",
+      data: null,
+      success: function (x) {
+        $("#lista_Fabricantes").html(x);
+        $(".select2").select2();
+      },
+      error: function (jqXHR, estado, error) {},
+    });
+  });
+}
+
+function listar_Familias() {
+  $(document).ready(function () {
+    $.ajax({
+      beforeSend: function () {
+        $("#lista_Familia").html("Recuperando proveedores...");
+      },
+      url: "Lista_Familias.php",
+      type: "POST",
+      data: null,
+      success: function (x) {
+        $("#lista_Familia").html(x);
+        $(".select2").select2();
+      },
+      error: function (jqXHR, estado, error) {},
+    });
+  });
+}
+
+//////Mostrar  sub familia
+
+function lista_SubFamilia_Despacho() {
+  $(document).ready(function () {
+    $.ajax({
+      beforeSend: function () {
+        $("#lista_SubFamilia").html("Recuperando SubFamilia...");
+      },
+      url: "Lista_SubFamilia_Ventas.php",
+      type: "POST",
+      data: "fami=" + $("#lista_Familia option:selected").val(),
+      success: function (x) {
+        $("#lista_SubFamilia").html(x);
+        $(".select2").select2();
+      },
+      error: function (jqXHR, estado, error) {},
+    });
+  });
+}
+
+function lista_subfami2() {
+  $(document).ready(function () {
+    $.ajax({
+      beforeSend: function () {
+        $("#lista_subfamilia2").html("Recuperando Sub Familia2...");
+      },
+      url: "lista_subfami2.php",
+      type: "POST",
+      data: "fami=" + $("#lista_SubFamilia option:selected").val(),
+      success: function (x) {
+        $("#lista_subfamilia2").html(x);
+        $(".select2").select2();
+      },
+      error: function (jqXHR, estado, error) {},
+    });
+  });
+}
+
+////muestra data
+function procesa_Busqueda() {
+  fabricante = $("#lista_Fabricantes option:selected").val();
+  familia = $("#lista_Familia option:selected").val();
+  subfami = $("#lista_SubFamilia option:selected").val();
+  subfami2 = $("#lista_subfamilia2 option:selected").val();
+
+  fechai = $("#fechai").val();
+  fechaf = $("#fechaf").val();
+  text = $("#text").val();
+  if (text == "") {
+    txt = "*";
+  } else {
+    txt = text;
+  }
+  // $("#lista_marca_familia").html('<div class="spinner-container"><i class="fas fa-spinner fa-spin"></i> </div>');
+  swal({
+    title: "Cargando...",
+    text: "Espere un momento",
+    content: {
+      element: "div",
+      attributes: {
+        innerHTML: `
+          <div style="text-align: center; margin-bottom: 10px;">
+            <img src="image/IncodeMob.png" alt="incodemob" style="width: 75px; height: 75px;">
+          </div>
+          <div style="display: flex; justify-content: center; align-items: center; margin-top: 20px;">
+              <div style="width: 10px; height: 10px; margin: 0 5px; background: #007BFF; border-radius: 50%; animation: bounce 0.6s infinite ease-in-out; animation-delay: -0.32s;"></div>
+              <div style="width: 10px; height: 10px; margin: 0 5px; background: #007BFF; border-radius: 50%; animation: bounce 0.6s infinite ease-in-out; animation-delay: -0.16s;"></div>
+              <div style="width: 10px; height: 10px; margin: 0 5px; background: #007BFF; border-radius: 50%; animation: bounce 0.6s infinite ease-in-out;"></div>
+          </div>
+          <style>
+              @keyframes bounce {
+                  0%, 80%, 100% {
+                      transform: scale(0);
+                  }
+                  40% {
+                      transform: scale(1);
+                  }
+              }
+          </style>
+        `,
+      },
+    },
+    buttons: false,
+    closeOnClickOutside: false,
+  });
+  /////traer datos
+  $.post(
+    "Lista_Datos_marca_familia.php",
+    {
+      fabricante: fabricante,
+      familia: familia,
+      subfami: subfami,
+      // subfami2: subfami2,
+      fechai: fechai,
+      fechaf: fechaf,
+      txt: txt,
+    },
+    function (dat2) {
+      // Retrasar el cierre del Swal 1.5 segundos
+      setTimeout(() => {
+        swal.close();
+        $("#lista_marca_familia").html(dat2);
+        $("#Tabla_Esca").DataTable({
+          dom: '<"top"lBf>rt<"bottom"ip>',
+          buttons: [
+            {
+              extend: "copy",
+              text: '<i class="fa fa-copy"></i> Copiar',
+              titleAttr: "Copiar",
+              className: "btn btn-copy",
+            },
+            // {
+            //   extend: 'csv',
+            //   text: '<i class="fa fa-file"></i> Exportar CSV',
+            //   titleAttr: 'Exportar a CSV',
+            //   className: 'btn btn-csv'
+            // },
+            // {
+            //   extend: 'excel',
+            //   text: '<i class="fa fa-file"></i> Exportar Excel',
+            //   titleAttr: 'Exportar a Excel',
+            //   className: 'btn btn-excel'
+            // },
+            {
+              extend: "pdf",
+              text: '<i class="fa fa-file"></i> Exportar PDF',
+              titleAttr: "Exportar a PDF",
+              className: "btn btn-pdf",
+              orientation: "landscape",
+              pageSize: "A4",
+            },
+            {
+              extend: "print",
+              text: '<i class="fa fa-print"></i> Imprimir',
+              titleAttr: "Imprimir",
+              className: "btn btn-print",
+            },
+          ],
+        });
+      }, 1500); // Retraso de 1.5 segundos
+    }
+  );
+}
+
+function exportar_excel() {
+  fabricante = $("#lista_Fabricantes option:selected").val();
+  familia = $("#lista_Familia option:selected").val();
+  subfami = $("#lista_SubFamilia option:selected").val();
+  subfami2 = $("#lista_subfamilia2 option:selected").val();
+  periodo = $("#cmeses").val();
+  anio = $("#anos").val();
+  text = $("#text").val();
+
+  text = $("#text").val();
+  if (text == "") {
+    txt = "*";
+  } else {
+    txt = text;
+  }
+
+  javascript: window.open(
+    "reporte_excel_lista_datos_marca_fam.php?fabricante=" +
+      fabricante +
+      "&familia=" +
+      familia +
+      "&subfami=" +
+      subfami +
+      "&subfami2=" +
+      subfami2 +
+      "&periodo=" +
+      periodo +
+      "&anio=" +
+      anio +
+      "&txt=" +
+      txt
+  );
+}
+
+function procesa_Busqueda1() {
+  fabricante = $("#lista_Fabricantes option:selected").val();
+  familia = $("#lista_Familia option:selected").val();
+  subfami = $("#lista_SubFamilia option:selected").val();
+  subfami2 = $("#lista_subfamilia2 option:selected").val();
+  periodo = $("#cmeses").val();
+  anio = $("#anos").val();
+  //fechai = $("#fechai").val();
+  //fechaf = $("#fechaf").val();
+  text = $("#text").val();
+  if (text == "") {
+    txt = "*";
+  } else {
+    txt = text;
+  }
+
+  /////traer datos
+
+  $.ajax({
+    beforeSend: function () {
+      // $("#cartera_vendedores").html("Consultando informacion...");
+      // $("#lista_marca_familia").html('<div class="spinner-container"><i class="fas fa-spinner fa-spin"></i> </div>');
+      swal({
+        title: "Cargando...",
+        text: "Espere un momento",
+        content: {
+          element: "div",
+          attributes: {
+            innerHTML: `
+              <div style="text-align: center; margin-bottom: 10px;">
+                <img src="image/IncodeMob.png" alt="incodemob" style="width: 75px; height: 75px;">
+              </div>
+              <div style="display: flex; justify-content: center; align-items: center; margin-top: 20px;">
+                  <div style="width: 10px; height: 10px; margin: 0 5px; background: #007BFF; border-radius: 50%; animation: bounce 0.6s infinite ease-in-out; animation-delay: -0.32s;"></div>
+                  <div style="width: 10px; height: 10px; margin: 0 5px; background: #007BFF; border-radius: 50%; animation: bounce 0.6s infinite ease-in-out; animation-delay: -0.16s;"></div>
+                  <div style="width: 10px; height: 10px; margin: 0 5px; background: #007BFF; border-radius: 50%; animation: bounce 0.6s infinite ease-in-out;"></div>
+              </div>
+              <style>
+                  @keyframes bounce {
+                      0%, 80%, 100% {
+                          transform: scale(0);
+                      }
+                      40% {
+                          transform: scale(1);
+                      }
+                  }
+              </style>
+            `,
+          },
+        },
+        buttons: false,
+        closeOnClickOutside: false,
+      });
+    },
+    url: "Lista_Datos_marca_familia.php",
+    type: "POST",
+    data:
+      "familia=" +
+      familia +
+      "&subfami=" +
+      subfami +
+      "&subfami2=" +
+      subfami2 +
+      "&fabricante=" +
+      fabricante +
+      "&txt=" +
+      txt +
+      "&periodo=" +
+      $("#cmeses").val() +
+      "&anio=" +
+      anio,
+    success: function (dat2) {
+      // Retrasar el cierre del Swal 1.5 segundos
+      setTimeout(() => {
+        swal.close();
+        $("#lista_marca_familia").html(dat2);
+        $("#Tabla_Esca").DataTable({
+          dom: '<"top"lBf>rt<"bottom"ip>',
+          buttons: [
+            {
+              extend: "copy",
+              text: '<i class="fa fa-copy"></i> Copiar',
+              titleAttr: "Copiar",
+              className: "btn btn-copy",
+            },
+            // {
+            //   extend: 'csv',
+            //   text: '<i class="fa fa-file"></i> Exportar CSV',
+            //   titleAttr: 'Exportar a CSV',
+            //   className: 'btn btn-csv'
+            // },
+            // {
+            //   extend: 'excel',
+            //   text: '<i class="fa fa-file"></i> Exportar Excel',
+            //   titleAttr: 'Exportar a Excel',
+            //   className: 'btn btn-excel'
+            // },
+            {
+              extend: "pdf",
+              text: '<i class="fa fa-file"></i> Exportar PDF',
+              titleAttr: "Exportar a PDF",
+              className: "btn btn-pdf",
+              orientation: "landscape",
+              pageSize: "A4",
+            },
+            {
+              extend: "print",
+              text: '<i class="fa fa-print"></i> Imprimir',
+              titleAttr: "Imprimir",
+              className: "btn btn-print",
+            },
+          ],
+        });
+      }, 1500); // Retraso de 1.5 segundos
+    },
+    error: function (jqXHR, estado, error) {
+      $("#lista_marca_familia").html(estado + "    " + error);
+    },
+  });
+  /* $.post("Lista_Datos_marca_familia.php", { fabricante: fabricante, familia: familia, subfami, periodo: periodo,txt: txt },
+    function (dat2) {
+
+      $("#lista_marca_familia").html(dat2);
+      $('#Tabla_Esca').DataTable();
+
+    }); */
+}
+
+function ReportedeFacturasEmitidas() {
+  $(document).ready(function () {
+    if ($("#fi").val() != "" || $("#ff").val() != "") {
+      $.ajax({
+        beforeSend: function () {
+          $("#data").html("Buscando Facturas, un momento...");
+        },
+
+        url: "Listar_Report_Facturas_EmitidasCompras.php",
+        type: "POST",
+        data:
+          "fechai=" +
+          $("#fi").val() +
+          "&fechaf=" +
+          $("#ff").val() +
+          "&sed=" +
+          $("#sed option:selected").val(),
+
+        success: function (data2) {
+          $("#lista_Repor_Consumo").html(data2);
+          $("#Tabla_factu").DataTable();
+        },
+        error: function (jqXHR, estado, error) {
+          alert(
+            "Hubor un error al buscar el reporte de consumos...por favor reporte a soporte...!"
+          );
+          $("#tbpr1").hmtl(estado + "     " + error);
+        },
+      });
+    } else {
+      alertify.error("Selecciona un rango de fechas para poder continuar...!");
+    }
+  });
+}
+function muestra_detalle_facturas_de_compras(num_ticket) {
+  var tic = num_ticket.split("|");
+  $("#modal_detalle_venta").modal({
+    show: true,
+    backdrop: "static",
+    keyboard: false,
+  });
+  $.ajax({
+    beforeSend: function () {
+      $("#detalle_de_venta").html("Consultando detalle de facturas...");
+    },
+    url: "consulta_detalle_facturas_de_compras.php",
+    type: "POST",
+    data: "serie=" + tic[0] + "&numero=" + tic[1],
+    success: function (x) {
+      $(".nuticket").html("");
+      $("#idpedido").val(tic[0]);
+      $(".nuticket").append(
+        "Detalle de Facturas | <span class='label' style='background-color: royalblue'>#: " +
+          tic[0] +
+          "</span>"
+      );
+      $("#detalle_de_venta").html(x);
+
+      var idpedido = "";
+      idpedido = tic[0];
+    },
+    error: function (jqXHR, estado, error) {
+      $("#detalle_de_venta").html("Hubo un error: " + estado + " " + error);
+    },
+  });
+}
+function genera_opcion_Compras() {
+  $(document).ready(function () {
+    $.ajax({
+      beforeSend: function () {
+        $("#pone_opcion").html("Poniendo opciones...");
+      },
+      url: "Mostrar_Fecha_GuiaEmi.php",
+      type: "POST",
+      data: "option=" + 1,
+      success: function (res) {
+        $("#pone_opcion").html(res);
+        $(function () {
+          $("#daterange-btn").daterangepicker(
+            {
+              ranges: {
+                "Este dia": [moment(), moment()],
+                Ayer: [
+                  moment().subtract(1, "days"),
+                  moment().subtract(1, "days"),
+                ],
+                "Los ultimos 7 dias": [moment().subtract(6, "days"), moment()],
+                "Los ultimos 30 dias": [
+                  moment().subtract(29, "days"),
+                  moment(),
+                ],
+                "Este mes": [
+                  moment().startOf("month"),
+                  moment().endOf("month"),
+                ],
+                "El mes pasado": [
+                  moment().subtract(1, "month").startOf("month"),
+                  moment().subtract(1, "month").endOf("month"),
+                ],
+              },
+              startDate: moment().subtract(29, "days"),
+              endDate: moment(),
+            },
+            function (start, end) {
+              $(".fe").html(
+                start.format("MMMM D, YYYY") +
+                  " - " +
+                  end.format("MMMM D, YYYY")
+              );
+              var xstart = start.format("YYYY-MM-DD");
+              var xend = end.format("YYYY-MM-DD");
+
+              $("#fi").val(xstart);
+              $("#ff").val(xend);
+              //alert(start.format('YYYY-MM-DD')+'    '+end.format('YYYY-MM-DD'));
+            }
+          );
+        });
+        $("#numero_caja").select2();
+        $("#numero_ticket").inputmask("mask", {
+          alias: "numeric",
+          autogroup: true,
+          digits: 0,
+          digitsOptional: false,
+        });
+      },
+      error: function (jqXHR, estado, error) {
+        alert(
+          "Hubor un error al establecer las opciones de consulta de venta, reporte a soporte...!"
+        );
+        $("#pone_opcion").hmtl(estado + "     " + error);
+      },
+    });
+  });
+}
+
+function lista_cmeses() {
+  $(document).ready(function () {
+    $.ajax({
+      beforeSend: function () {
+        $("#pone_cmeses").html("Recuperando meses...");
+      },
+      url: "pone_cmeses.php",
+      type: "POST",
+      data: null,
+      success: function (x) {
+        $("#pone_cmeses").html(x);
+
+        $(".select2").select2();
+
+        var urlParams = new URLSearchParams(window.location.search);
+        var valMesesito = urlParams.get("val");
+        var yearAnte = urlParams.get("year");
+
+        // Asignar el valor del mes si existe en la URL, de lo contrario usar mes_actual
+        if (valMesesito) {
+          $("#pone_cmeses select").val(valMesesito).trigger("change");
+
+          $("#anos").val(yearAnte).trigger("change");
+        } else {
+          var fecha = new Date();
+          var mes_actual = fecha.getMonth() + 1;
+          $("#pone_cmeses select").val(mes_actual).trigger("change");
+        }
+      },
+      error: function (jqXHR, estado, error) {},
+    });
+  });
+}
+
+$(document).ready(function () {
+  setTimeout(function () {
+    $("#anos").val("2025").trigger("change.select2");
+  }, 100);
+});
